@@ -1,22 +1,19 @@
 """
 PlantVision AI — Train the Plant Identification / Disease Classifier
 
-Phase 2 (Week 5-6). Trains src/classification/plant_classifier.py on
-data/train and data/validation (produced by scripts/split_dataset.py).
+Phase 2 (Week 5-6, updated Week 8). Trains src/classification/plant_classifier.py
+on data/train and data/validation (produced by scripts/split_dataset.py).
 
-Handles the class imbalance logged in docs/DATASET_PLAN.md via a
-WeightedRandomSampler, so the ~20x gap between the smallest and largest
-class doesn't bias the model toward the majority classes.
-
-Tuned for a 4GB-VRAM card (e.g. GTX 1650): batch_size=16 default and
-mixed-precision (AMP) training to keep memory use low.
+Week 8 update: stronger data augmentation to improve real-world robustness
+(field photos, varied lighting, angles, backgrounds). Expect slightly lower
+PlantVillage test accuracy in exchange for better real-image generalization.
 
 Usage:
-    python training/train_plant_classifier.py --data_dir data --epochs 15
+    python training/train_plant_classifier.py --data_dir data --epochs 20
 
 Outputs:
-    models/plant_classifier/best_model.pt   (best validation accuracy)
-    models/plant_classifier/last_model.pt   (final epoch, for resuming)
+    models/plant_classifier/best_model.pt
+    models/plant_classifier/last_model.pt
     models/plant_classifier/class_to_idx.json
     reports/plant_classifier_training_log.csv
     reports/plant_classifier_training_report.md
@@ -37,7 +34,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision import datasets, transforms
 
-# Allow running this script directly from the repo root.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.classification.plant_classifier import build_model  # noqa: E402
 
@@ -50,9 +46,8 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train the PlantVision plant classifier")
     p.add_argument("--data_dir", type=str, default="data",
                     help="Directory containing train/ and validation/ subfolders")
-    p.add_argument("--epochs", type=int, default=15)
-    p.add_argument("--batch_size", type=int, default=16,
-                    help="Default 16 — safe for 4GB VRAM cards like the GTX 1650")
+    p.add_argument("--epochs", type=int, default=20)
+    p.add_argument("--batch_size", type=int, default=16)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--freeze_backbone", action="store_true", default=True,
                     help="Train only the classification head (fast baseline)")
@@ -62,7 +57,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--output_dir", type=str, default="models/plant_classifier")
     p.add_argument("--reports_dir", type=str, default="reports")
     p.add_argument("--no_amp", action="store_true",
-                    help="Disable mixed-precision training (use if you hit numerical issues)")
+                    help="Disable mixed-precision training")
     p.add_argument("--seed", type=int, default=42)
     return p.parse_args()
 
@@ -76,12 +71,30 @@ def build_dataloaders(data_dir: Path, batch_size: int, num_workers: int):
             f"Run scripts/split_dataset.py first."
         )
 
+    # --- Week 8: stronger augmentation for real-world robustness ---
     train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+        # Scale / crop: allow leaves at many sizes and aspect ratios
+        transforms.RandomResizedCrop(224, scale=(0.5, 1.0), ratio=(0.75, 1.33)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+        transforms.RandomVerticalFlip(p=0.2),
+        transforms.RandomRotation(30),
+
+        # Lighting: simulate sun, shade, overcast, warm/cool casts
+        transforms.ColorJitter(
+            brightness=0.4, contrast=0.4, saturation=0.4, hue=0.05
+        ),
+
+        # Camera angle: simulate a phone held at a slight tilt
+        transforms.RandomPerspective(distortion_scale=0.25, p=0.4),
+
+        # Focus / motion: simulate handshake or slight out-of-focus
+        transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.2)),
+
         transforms.ToTensor(),
+
+        # Occlusion: simulate another leaf or shadow covering part of the leaf
+        transforms.RandomErasing(p=0.2, scale=(0.02, 0.2)),
+
         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
     ])
     val_transform = transforms.Compose([
@@ -100,7 +113,7 @@ def build_dataloaders(data_dir: Path, batch_size: int, num_workers: int):
             "check scripts/split_dataset.py output."
         )
 
-    # --- Weighted sampling to counter the class imbalance from DATASET_PLAN.md ---
+    # Weighted sampling to counter class imbalance
     class_counts = Counter(label for _, label in train_ds.samples)
     num_classes = len(train_ds.classes)
     class_weights = {c: 1.0 / class_counts[c] for c in range(num_classes)}
@@ -243,6 +256,7 @@ def main() -> None:
         f.write(f"- Epochs run: {args.epochs}\n")
         f.write(f"- Batch size: {args.batch_size}\n")
         f.write(f"- Backbone: {'frozen (head only)' if args.freeze_backbone else 'fine-tuned'}\n")
+        f.write(f"- Augmentation: STRONG (Week 8 — real-world oriented)\n")
         f.write(f"- Best validation accuracy: {best_val_acc:.4f}\n")
         f.write(f"- Classes: {num_classes}\n")
         f.write(f"- Full per-epoch log: `{log_path.as_posix()}`\n")

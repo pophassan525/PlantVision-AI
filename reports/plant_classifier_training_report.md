@@ -1,9 +1,10 @@
 # Plant Classifier — Training Report
 
-- Epochs run: 15
+- Epochs run: 20
 - Batch size: 16
 - Backbone: frozen (head only)
-- Best validation accuracy: 0.9433
+- Augmentation: STRONG (Week 8 — real-world oriented)
+- Best validation accuracy: 0.8865
 - Classes: 38
 - Full per-epoch log: `reports/plant_classifier_training_log.csv`
 - Best checkpoint: `models/plant_classifier/best_model.pt`
