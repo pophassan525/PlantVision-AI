@@ -6,6 +6,7 @@ A single-file app for plant leaf analysis:
   - Auto-crop leaf detection (OpenCV GrabCut)
   - Plant + disease prediction with confidence gauge
   - Per-disease information and care advice
+  - Grad-CAM attention map
   - Full model info tab with real evaluation artifacts
 
 Run from the project root:
@@ -26,6 +27,9 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 from torchvision import transforms
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 sys.path.append(str(Path(__file__).resolve().parent))
 from src.classification.plant_classifier import build_model  # noqa: E402
@@ -51,7 +55,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Green Field theme — deep forest greens + earth tones
 CUSTOM_CSS = """
 <style>
     /* ---- Global ---- */
@@ -290,11 +293,44 @@ def build_transform():
         transforms.ToTensor(),
         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
     ])
+@st.cache_data
+def load_training_log():
+    """Load the training log CSV produced by train_plant_classifier.py."""
+    path = ROOT / "reports" / "plant_classifier_training_log.csv"
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
 
 
-# ============================================================================
-# Placeholder — will be filled by Part 2 and Part 3
-# ============================================================================
+@st.cache_data
+def count_dataset_images():
+    """Count images per class in train / validation / test splits."""
+    counts = {}
+    for split in ["train", "validation", "test"]:
+        split_dir = ROOT / "data" / split
+        if not split_dir.exists():
+            continue
+        n = 0
+        for cls_dir in split_dir.iterdir():
+            if cls_dir.is_dir():
+                n += sum(1 for _ in cls_dir.glob("*") if _.is_file())
+        counts[split] = n
+    return counts
+
+
+@st.cache_data
+def count_per_class():
+    """Count training images for each class."""
+    train_dir = ROOT / "data" / "train"
+    if not train_dir.exists():
+        return None
+    rows = []
+    for cls_dir in train_dir.iterdir():
+        if cls_dir.is_dir():
+            n = sum(1 for _ in cls_dir.glob("*") if _.is_file())
+            rows.append({"class": cls_dir.name, "count": n})
+    return pd.DataFrame(rows).sort_values("count", ascending=False)
+
 # ============================================================================
 # Disease info dictionary — brief descriptions + care advice for all 38 classes
 # ============================================================================
@@ -622,6 +658,83 @@ def auto_crop_leaf(pil_image: Image.Image, margin: int = 15) -> Image.Image:
     return pil_image.crop((x0, y0, x1, y1))
 
 
+def generate_gradcam(model, device, image: Image.Image, target_class: int):
+    """
+    Pure-PyTorch Grad-CAM (no external library).
+
+    Computes the gradient of the target class score w.r.t. the last
+    convolutional feature map, then produces a heatmap overlay on the
+    input image.
+
+    Returns an RGB numpy array (uint8) with the heatmap overlaid.
+    """
+    model.eval()
+
+    # Hook to capture the last conv feature map + its gradient
+    features = {}
+    gradients = {}
+
+    def forward_hook(module, input, output):
+        features["value"] = output
+
+    def backward_hook(module, grad_input, grad_output):
+        gradients["value"] = grad_output[0]
+
+    # Last conv block of MobileNetV2
+    target_layer = model.features[-1]
+    fh = target_layer.register_forward_hook(forward_hook)
+    bh = target_layer.register_full_backward_hook(backward_hook)
+
+    try:
+        tf = build_transform()
+        input_tensor = tf(image).unsqueeze(0).to(device)
+        input_tensor.requires_grad_(True)
+
+        model.zero_grad()
+        logits = model(input_tensor)
+
+        # Gradient of the target class score
+        score = logits[0, target_class]
+        score.backward()
+
+        # feature map: (1, C, H, W)  -> gradient: (1, C, H, W)
+        fmap = features["value"][0]           # (C, H, W)
+        grad = gradients["value"][0]          # (C, H, W)
+
+        # Global-average-pool the gradients over spatial dims -> weights (C,)
+        weights = grad.mean(dim=(1, 2))
+
+        # Weighted sum of feature maps
+        cam = torch.zeros(fmap.shape[1:], dtype=torch.float32, device=fmap.device)
+        for i, w in enumerate(weights):
+            cam += w * fmap[i]
+
+        # ReLU (only positive contributions)
+        cam = torch.relu(cam)
+
+        # Normalize to [0, 1]
+        cam = cam - cam.min()
+        if cam.max() > 0:
+            cam = cam / cam.max()
+
+        cam_np = cam.detach().cpu().numpy()
+
+        # Resize heatmap to 224x224
+        cam_img = cv2.resize(cam_np, (224, 224))
+
+        # Apply JET colormap
+        heatmap = cv2.applyColorMap(np.uint8(255 * cam_img), cv2.COLORMAP_JET)
+        heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+
+        # Overlay on original image
+        rgb_img = np.array(image.resize((224, 224))).astype(np.float32)
+        overlay = heatmap.astype(np.float32) * 0.4 + rgb_img * 0.6
+        overlay = np.uint8(np.clip(overlay, 0, 255))
+
+        return overlay
+    finally:
+        fh.remove()
+        bh.remove()
 def confidence_gauge(prob: float, is_healthy: bool) -> str:
     """Return HTML for a circular confidence gauge (SVG)."""
     pct = prob * 100
@@ -647,6 +760,7 @@ def confidence_gauge(prob: float, is_healthy: bool) -> str:
       </svg>
     </div>
     """
+
 
 # ============================================================================
 # Load model and metrics
@@ -719,8 +833,7 @@ with st.sidebar:
 # ============================================================================
 # Tabs
 # ============================================================================
-tab_predict, tab_info = st.tabs(["🔍 Predict", "📊 Model Info"])
-
+tab_predict, tab_info, tab_analytics = st.tabs(["🔍 Predict", "📊 Model Info", "📈 Analytics"])
 # ---------------------------------------------------------------------------
 # Predict tab
 # ---------------------------------------------------------------------------
@@ -875,6 +988,26 @@ with tab_predict:
             </div>
             """, unsafe_allow_html=True)
 
+        # --- Grad-CAM attention map ---
+        st.markdown("---")
+        st.markdown("### 🔍 Model Attention (Grad-CAM)")
+        st.caption(
+            "Where the model looked when making its top prediction. "
+            "Red = high attention, blue = low attention."
+        )
+
+        with st.spinner("Generating attention map..."):
+            try:
+                top_idx = [k for k, v in idx_to_class.items() if v == top_class][0]
+                heatmap = generate_gradcam(model, device, processed, target_class=top_idx)
+                st.image(
+                    heatmap,
+                    caption=f"Attention for: {plant} — {condition}",
+                    use_container_width=True,
+                )
+            except Exception as e:
+                st.warning(f"Could not generate Grad-CAM: {e}")
+
         # --- Disclaimer ---
         st.markdown("---")
         st.caption(
@@ -958,6 +1091,148 @@ with tab_info:
     - Pest detection and severity estimation are separate modules (planned)
     - Not a substitute for professional agricultural diagnosis
     """)
+
+# ---------------------------------------------------------------------------
+# Analytics tab
+# ---------------------------------------------------------------------------
+with tab_analytics:
+    st.markdown("## 📈 Analytics Dashboard")
+    st.caption("Real, run-produced statistics from the dataset and the trained model.")
+
+    split_counts = count_dataset_images()
+    per_class_df = count_per_class()
+    log_df = load_training_log()
+
+    # ===== Overview cards =====
+    st.markdown("### 🎯 Overview")
+    total_images = sum(split_counts.values()) if split_counts else 0
+    o1, o2, o3, o4 = st.columns(4)
+    o1.metric("Total images", f"{total_images:,}")
+    o2.metric("Classes", len(idx_to_class))
+    if metrics:
+        o3.metric("Test accuracy", f"{metrics['accuracy']:.2%}")
+        o4.metric("F1 (macro)", f"{metrics['f1_macro']:.2%}")
+
+    # ===== Dataset split =====
+    if split_counts:
+        st.markdown("---")
+        st.markdown("### 🗂️ Dataset Split")
+        split_df = pd.DataFrame({
+            "Split": list(split_counts.keys()),
+            "Images": list(split_counts.values()),
+        })
+        fig_split = px.bar(
+            split_df, x="Split", y="Images", color="Split",
+            color_discrete_map={
+                "train": "#4ade80", "validation": "#fbbf24", "test": "#60a5fa",
+            },
+            text="Images",
+        )
+        fig_split.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0", showlegend=False, height=350,
+        )
+        fig_split.update_traces(textposition="outside")
+        st.plotly_chart(fig_split, use_container_width=True)
+
+    # ===== Class distribution =====
+    if per_class_df is not None and not per_class_df.empty:
+        st.markdown("---")
+        st.markdown("### 📊 Top 15 Classes (by training images)")
+
+        top15 = per_class_df.head(15).copy()
+        fig_top = px.bar(
+            top15, x="count", y="class", orientation="h",
+            color="count", color_continuous_scale="Greens",
+        )
+        fig_top.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0", height=500,
+            xaxis_title="Training images", yaxis_title="",
+            coloraxis_showscale=False,
+        )
+        fig_top.update_yaxes(autorange="reversed")
+        st.plotly_chart(fig_top, use_container_width=True)
+
+    # ===== Per-class F1 =====
+    if metrics and metrics.get("per_class_f1"):
+        st.markdown("---")
+        st.markdown("### 🎯 Per-Class F1 Score")
+
+        f1_df = pd.DataFrame(
+            [{"class": k, "f1": v} for k, v in metrics["per_class_f1"].items()]
+        ).sort_values("f1", ascending=True)
+
+        fig_f1 = px.bar(
+            f1_df, x="f1", y="class", orientation="h",
+            color="f1",
+            color_continuous_scale=["#f87171", "#fbbf24", "#4ade80"],
+            range_color=(0, 1),
+        )
+        fig_f1.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0", height=950,
+            xaxis_title="F1 score", yaxis_title="",
+            coloraxis_showscale=False,
+        )
+        fig_f1.update_xaxes(range=[0, 1])
+        st.plotly_chart(fig_f1, use_container_width=True)
+
+    # ===== Training curves =====
+    if log_df is not None and not log_df.empty:
+        st.markdown("---")
+        st.markdown("### 📉 Training History")
+
+        fig_loss = go.Figure()
+        fig_loss.add_trace(go.Scatter(
+            x=log_df["epoch"], y=log_df["train_loss"],
+            mode="lines+markers", name="Train loss",
+            line=dict(color="#60a5fa", width=3),
+        ))
+        fig_loss.add_trace(go.Scatter(
+            x=log_df["epoch"], y=log_df["val_loss"],
+            mode="lines+markers", name="Val loss",
+            line=dict(color="#f87171", width=3),
+        ))
+        fig_loss.update_layout(
+            title="Loss over epochs",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0", height=400,
+            xaxis_title="Epoch", yaxis_title="Loss",
+            legend=dict(bgcolor="rgba(0,0,0,0)"),
+        )
+        st.plotly_chart(fig_loss, use_container_width=True)
+
+        fig_acc = go.Figure()
+        fig_acc.add_trace(go.Scatter(
+            x=log_df["epoch"], y=log_df["train_acc"],
+            mode="lines+markers", name="Train accuracy",
+            line=dict(color="#4ade80", width=3),
+        ))
+        fig_acc.add_trace(go.Scatter(
+            x=log_df["epoch"], y=log_df["val_acc"],
+            mode="lines+markers", name="Val accuracy",
+            line=dict(color="#fbbf24", width=3),
+        ))
+        fig_acc.update_layout(
+            title="Accuracy over epochs",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e2e8f0", height=400,
+            xaxis_title="Epoch", yaxis_title="Accuracy",
+            yaxis_range=[0, 1],
+            legend=dict(bgcolor="rgba(0,0,0,0)"),
+        )
+        st.plotly_chart(fig_acc, use_container_width=True)
+
+        best_epoch_row = log_df.loc[log_df["val_acc"].idxmax()]
+        st.info(
+            f"🏆 Best epoch: {int(best_epoch_row['epoch'])} "
+            f"with validation accuracy {best_epoch_row['val_acc']:.2%}"
+        )
+
+    st.markdown("---")
+    st.caption("📌 All statistics are computed live from real artifacts in `reports/`.")
+
 
 # ============================================================================
 # Footer
