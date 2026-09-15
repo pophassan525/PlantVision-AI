@@ -541,6 +541,336 @@ DISEASE_INFO: dict[str, dict[str, str]] = {
     },
 }
 
+# ============================================================================
+# Bilingual translations (EN / AR-EG)
+# ============================================================================
+TRANSLATIONS = {
+    "en": {
+        # Header
+        "hero_tagline": "From Plant Images to Agricultural Intelligence.",
+        "hero_subtitle": "Upload a leaf photo — identify the plant and assess its health in seconds.",
+        "hero_badge": "🌱 Classifier Preview · Phase 10",
+
+        # Sidebar
+        "sidebar_title": "PlantVision AI",
+        "sidebar_subtitle": "Agricultural Intelligence Platform",
+        "sidebar_model": "Model Status",
+        "sidebar_arch": "Architecture",
+        "sidebar_device": "Device",
+        "sidebar_classes": "Classes",
+        "sidebar_perf": "Test Performance",
+        "sidebar_acc": "Accuracy",
+        "sidebar_top5": "Top-5 Accuracy",
+        "sidebar_f1": "F1 (Macro)",
+        "sidebar_evaluated": "Evaluated on",
+        "sidebar_evaluated_imgs": "held-out images",
+        "sidebar_preview_note": "**Preview build.** Pest detection, severity estimation, health score, and RAG recommendations are planned for later phases.",
+
+        # Tabs
+        "tab_predict": "🔍 Predict",
+        "tab_info": "📊 Model Info",
+        "tab_analytics": "📈 Analytics",
+
+        # Predict tab
+        "upload_label": "📸 Upload a plant leaf image (JPG / PNG)",
+        "upload_help": "One leaf, plain background, good lighting = best results.",
+        "autocrop_label": "✂️ Auto-crop leaf",
+        "autocrop_help": "Automatically isolate the main leaf before prediction.",
+        "autocrop_caption": "Recommended for real-world photos.",
+        "tips_title": "📖 Tips for best accuracy",
+        "no_image": "👆 Upload an image above to see a prediction.",
+        "analyzing": "Analyzing leaf...",
+        "detecting": "Detecting leaf...",
+        "original": "Original",
+        "after_crop": "After auto-crop",
+        "no_leaf": "_(No leaf detected — using original)_",
+        "uploaded_image": "Uploaded image",
+        "healthy": "Healthy",
+        "low_conf": "⚠️ **Low confidence ({pct}).** The image may differ from the training data. Try auto-crop or retake the photo.",
+        "mod_conf": "ℹ️ Moderate confidence ({pct}). Consider retaking for a more reliable result.",
+        "about_result": "📋 About this result",
+        "condition": "🩺 Condition",
+        "severity": "Severity",
+        "care_advice": "💡 Care advice",
+        "top5_title": "🎯 Top 5 candidates",
+        "gradcam_title": "🔍 Model Attention (Grad-CAM)",
+        "gradcam_caption": "Where the model looked when making its top prediction. Red = high attention, blue = low attention.",
+        "gradcam_spinner": "Generating attention map...",
+        "gradcam_attn": "Attention for",
+        "gradcam_fail": "Could not generate Grad-CAM",
+        "disclaimer": "⚠️ This is a raw classifier output for a single image — not a full plant health report. Confirm with a professional before any treatment.",
+        "low_res": "⚠️ Image is small ({w}×{h}). Predictions may be unreliable.",
+
+        # Health score
+        "health_score": "Health Score",
+        "hs_healthy": "Healthy",
+        "hs_moderate": "Moderate",
+        "hs_critical": "Critical",
+        "hs_desc_healthy": "The leaf looks healthy. Keep monitoring.",
+        "hs_desc_moderate": "Signs of disease detected. Take action soon.",
+        "hs_desc_critical": "Serious disease. Treat immediately.",
+
+        # Model Info tab
+        "info_title": "🧠 Model Details",
+        "info_metrics": "📊 Test Set Metrics (held-out)",
+        "info_weakest": "⚠️ Weakest 5 Classes",
+        "info_weakest_cap": "These classes have the lowest per-class F1 — useful for future improvement.",
+        "info_confusion": "🔀 Confusion Matrix",
+        "info_confusion_cap": "Full 38×38 confusion matrix on the test set. Darker = more predictions.",
+        "info_classes": "🌾 All 38 Recognized Classes",
+        "info_crops_covered": "crops covered",
+        "info_limitations": "⚠️ Limitations",
+        "info_no_metrics": "No metrics file found. Run `python training/evaluate.py` first.",
+
+        # Analytics tab
+        "an_title": "## 📈 Analytics Dashboard",
+        "an_caption": "Real, run-produced statistics from the dataset and the trained model.",
+        "an_overview": "### 🎯 Overview",
+        "an_total_images": "Total images",
+        "an_classes": "Classes",
+        "an_test_acc": "Test accuracy",
+        "an_f1": "F1 (macro)",
+        "an_split": "### 🗂️ Dataset Split",
+        "an_top15": "### 📊 Top 15 Classes (by training images)",
+        "an_per_f1": "### 🎯 Per-Class F1 Score",
+        "an_training": "### 📉 Training History",
+        "an_footer": "📌 All statistics are computed live from real artifacts in `reports/`.",
+
+        # Footer
+        "footer_line1": "PlantVision AI · From Plant Images to Agricultural Intelligence",
+        "footer_line2": "Preview build · Classifier only · For educational use",
+        "footer_line3": "Results should not replace professional agricultural diagnosis.",
+
+        # Language toggle
+        "lang_label": "🌐 Language",
+        "lang_en": "English",
+        "lang_ar": "العربية",
+    },
+    "ar": {
+        # Header
+        "hero_tagline": "من صور النباتات إلى الذكاء الزراعي.",
+        "hero_subtitle": "ارفع صورة ورقة نبتة — واعرف نوعها وحالتها في ثواني.",
+        "hero_badge": "🌱 نسخة تجريبية · المرحلة 10",
+
+        # Sidebar
+        "sidebar_title": "PlantVision AI",
+        "sidebar_subtitle": "منصة الذكاء الزراعي",
+        "sidebar_model": "حالة الموديل",
+        "sidebar_arch": "المعمارية",
+        "sidebar_device": "الجهاز",
+        "sidebar_classes": "عدد الفئات",
+        "sidebar_perf": "أداء الموديل",
+        "sidebar_acc": "الدقة",
+        "sidebar_top5": "دقة أفضل 5",
+        "sidebar_f1": "مقياس F1",
+        "sidebar_evaluated": "تم التقييم على",
+        "sidebar_evaluated_imgs": "صورة اختبار",
+        "sidebar_preview_note": "**نسخة تجريبية.** كشف الحشرات وتقدير الشدة ومؤشر الصحة والتوصيات الذكية — كل دي مراحل جاية.",
+
+        # Tabs
+        "tab_predict": "🔍 التحليل",
+        "tab_info": "📊 معلومات الموديل",
+        "tab_analytics": "📈 الإحصائيات",
+
+        # Predict tab
+        "upload_label": "📸 ارفع صورة ورقة نبتة (JPG / PNG)",
+        "upload_help": "ورقة واحدة، خلفية بسيطة، إضاءة كويسة = أفضل نتيجة.",
+        "autocrop_label": "✂️ قص الورقة تلقائيًا",
+        "autocrop_help": "الموديل بيعزل الورقة الأساسية لوحده قبل التحليل.",
+        "autocrop_caption": "منصوح بيها للصور الواقعية.",
+        "tips_title": "📖 نصايح لأفضل نتيجة",
+        "no_image": "👆 ارفع صورة فوق الأول عشان تشوف النتيجة.",
+        "analyzing": "جاري التحليل...",
+        "detecting": "جاري كشف الورقة...",
+        "original": "الصورة الأصلية",
+        "after_crop": "بعد القص",
+        "no_leaf": "_(مفيش ورقة اتكشفت — هنستخدم الصورة الأصلية)_",
+        "uploaded_image": "الصورة المرفوعة",
+        "healthy": "سليمة",
+        "low_conf": "⚠️ **الثقة قليلة ({pct}).** الصورة دي مختلفة عن اللي الموديل اتدرب عليه. جرّب تقص الورقة أو صوّرها تاني.",
+        "mod_conf": "ℹ️ الثقة متوسطة ({pct}). جرّب تصوّر الورقة تاني لنتيجة أدق.",
+        "about_result": "📋 عن النتيجة دي",
+        "condition": "🩺 الحالة",
+        "severity": "الشدة",
+        "care_advice": "💡 نصايح للعلاج",
+        "top5_title": "🎯 أفضل 5 احتمالات",
+        "gradcam_title": "🔍 اللي الموديل بص عليه (Grad-CAM)",
+        "gradcam_caption": "المناطق اللي الموديل ركّز عليها لما أخد القرار. الأحمر = تركيز عالي، الأزرق = تركيز ضعيف.",
+        "gradcam_spinner": "جاري رسم الخريطة...",
+        "gradcam_attn": "تركيز على",
+        "gradcam_fail": "مش قادرين نولّد Grad-CAM",
+        "disclaimer": "⚠️ ده تحليل مبدئي لصورة واحدة — مش تقرير كامل عن صحة النبتة. اتأكد مع خبير قبل أي علاج.",
+        "low_res": "⚠️ الصورة صغيرة ({w}×{h}). النتيجة مش دقيقة.",
+
+        # Health score
+        "health_score": "مؤشر الصحة",
+        "hs_healthy": "سليمة",
+        "hs_moderate": "متوسطة",
+        "hs_critical": "خطيرة",
+        "hs_desc_healthy": "الورقة شكلها سليمة. خلّي عينك عليها.",
+        "hs_desc_moderate": "فيه علامات مرض. اتحرك بسرعة.",
+        "hs_desc_critical": "المرض خطير. لازم علاج فوري.",
+
+        # Model Info tab
+        "info_title": "🧠 تفاصيل الموديل",
+        "info_metrics": "📊 نتائج الاختبار",
+        "info_weakest": "⚠️ أضعف 5 فئات",
+        "info_weakest_cap": "دي الفئات اللي الموديل أضعف فيها — مفيدة لتطوير المشروع بعدين.",
+        "info_confusion": "🔀 مصفوفة الالتباس",
+        "info_confusion_cap": "مصفوفة 38×38 للاختبار. الأغمق = تنبؤات أكتر.",
+        "info_classes": "🌾 كل الـ 38 فئة",
+        "info_crops_covered": "فصيلة مدعومة",
+        "info_limitations": "⚠️ قيود",
+        "info_no_metrics": "مفيش ملف نتايج. شغّل `python training/evaluate.py` الأول.",
+
+        # Analytics tab
+        "an_title": "## 📈 لوحة الإحصائيات",
+        "an_caption": "إحصائيات حقيقية من الداتاسيت والموديل.",
+        "an_overview": "### 🎯 نظرة عامة",
+        "an_total_images": "إجمالي الصور",
+        "an_classes": "عدد الفئات",
+        "an_test_acc": "دقة الاختبار",
+        "an_f1": "مقياس F1",
+        "an_split": "### 🗂️ تقسيم الداتاسيت",
+        "an_top15": "### 📊 أفضل 15 فئة (بعدد الصور)",
+        "an_per_f1": "### 🎯 مقياس F1 لكل فئة",
+        "an_training": "### 📉 تاريخ التدريب",
+        "an_footer": "📌 كل الأرقام دي محسوبة مباشرة من ملفات حقيقية في `reports/`.",
+
+        # Footer
+        "footer_line1": "PlantVision AI · من صور النباتات إلى الذكاء الزراعي",
+        "footer_line2": "نسخة تجريبية · الموديل فقط · للاستخدام التعليمي",
+        "footer_line3": "النتايج مش بديل عن التشخيص الزراعي المتخصص.",
+
+        # Language toggle
+        "lang_label": "🌐 اللغة",
+        "lang_en": "English",
+        "lang_ar": "العربية",
+    },
+}
+
+
+# Arabic translations for the 38 classes (plant name, condition)
+AR_CLASS_NAMES = {
+    "Apple___Apple_scab": ("تفاح", "جرب التفاح"),
+    "Apple___Black_rot": ("تفاح", "العفن الأسود"),
+    "Apple___Cedar_apple_rust": ("تفاح", "صدأ الأرز"),
+    "Apple___healthy": ("تفاح", "سليمة"),
+    "Blueberry___healthy": ("بلوبيري", "سليمة"),
+    "Cherry_(including_sour)___Powdery_mildew": ("كرز", "البياض الدقيقي"),
+    "Cherry_(including_sour)___healthy": ("كرز", "سليمة"),
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": ("ذرة", "تبقع الأوراق الرمادي"),
+    "Corn_(maize)___Common_rust_": ("ذرة", "الصدأ الشائع"),
+    "Corn_(maize)___Northern_Leaf_Blight": ("ذرة", "لفحة الأوراق الشمالية"),
+    "Corn_(maize)___healthy": ("ذرة", "سليمة"),
+    "Grape___Black_rot": ("عنب", "العفن الأسود"),
+    "Grape___Esca_(Black_Measles)": ("عنب", "الأسكا (الحصبة السوداء)"),
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": ("عنب", "لفحة الأوراق"),
+    "Grape___healthy": ("عنب", "سليمة"),
+    "Orange___Haunglongbing_(Citrus_greening)": ("برتقال", "التخضير الحمضي"),
+    "Peach___Bacterial_spot": ("خوخ", "التبقع البكتيري"),
+    "Peach___healthy": ("خوخ", "سليمة"),
+    "Pepper,_bell___Bacterial_spot": ("فلفل رومي", "التبقع البكتيري"),
+    "Pepper,_bell___healthy": ("فلفل رومي", "سليمة"),
+    "Potato___Early_blight": ("بطاطس", "اللفحة المبكرة"),
+    "Potato___Late_blight": ("بطاطس", "اللفحة المتأخرة"),
+    "Potato___healthy": ("بطاطس", "سليمة"),
+    "Raspberry___healthy": ("توت العليق", "سليمة"),
+    "Soybean___healthy": ("فول الصويا", "سليمة"),
+    "Squash___Powdery_mildew": ("قرع", "البياض الدقيقي"),
+    "Strawberry___Leaf_scorch": ("فراولة", "لفحة الأوراق"),
+    "Strawberry___healthy": ("فراولة", "سليمة"),
+    "Tomato___Bacterial_spot": ("طماطم", "التبقع البكتيري"),
+    "Tomato___Early_blight": ("طماطم", "اللفحة المبكرة"),
+    "Tomato___Late_blight": ("طماطم", "اللفحة المتأخرة"),
+    "Tomato___Leaf_Mold": ("طماطم", "عفن الأوراق"),
+    "Tomato___Septoria_leaf_spot": ("طماطم", "تبقع سبتوريا"),
+    "Tomato___Spider_mites Two-spotted_spider_mite": ("طماطم", "العنكبوت الأحمر"),
+    "Tomato___Target_Spot": ("طماطم", "التبقع الهدفي"),
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": ("طماطم", "فيروس تجعد الأوراق الأصفر"),
+    "Tomato___Tomato_mosaic_virus": ("طماطم", "فيروس الموزاييك"),
+    "Tomato___healthy": ("طماطم", "سليمة"),
+}
+
+
+def tr(key: str, lang: str = "en") -> str:
+    """Get a translated string from TRANSLATIONS."""
+    return TRANSLATIONS.get(lang, TRANSLATIONS["en"]).get(key, key)
+
+
+# ============================================================================
+# Health Score
+# ============================================================================
+def calculate_health_score(top_class: str, confidence: float) -> int:
+    """
+    Compute a 0-100 health score.
+
+    - Healthy classes → score based on confidence (85-100)
+    - Moderate severity diseases → score 40-65
+    - Severe diseases → score 5-40
+
+    All values are deterministic from the classifier output; no fabricated numbers.
+    """
+    _, _, is_healthy = parse_class(top_class)
+    info = DISEASE_INFO.get(top_class, {})
+    severity = info.get("severity", "Moderate")
+
+    if is_healthy:
+        # Healthy leaves: 85 to 100 based on confidence
+        return int(85 + 15 * confidence)
+
+    if severity == "Severe":
+        # Severe: 5-40 range
+        return int(5 + 35 * (1 - confidence))
+
+    # Moderate: 40-65 range
+    return int(40 + 25 * (1 - confidence))
+
+
+def health_score_gauge(score: int, lang: str = "en") -> str:
+    """Return HTML for the health score gauge."""
+    # Color based on score
+    if score >= 80:
+        color = "#4ade80"
+        label_key = "hs_healthy"
+        desc_key = "hs_desc_healthy"
+    elif score >= 50:
+        color = "#fbbf24"
+        label_key = "hs_moderate"
+        desc_key = "hs_desc_moderate"
+    else:
+        color = "#f87171"
+        label_key = "hs_critical"
+        desc_key = "hs_desc_critical"
+
+    label = tr(label_key, lang)
+    desc = tr(desc_key, lang)
+
+    # SVG circular progress
+    circumference = 2 * 3.14159 * 45  # ~282.74
+    offset = circumference * (1 - score / 100)
+
+    return f"""
+    <div style="text-align:center;padding:1rem 0;">
+      <svg width="160" height="160" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="45" stroke="rgba(74,222,128,0.15)"
+                stroke-width="10" fill="none"/>
+        <circle cx="60" cy="60" r="45" stroke="{color}"
+                stroke-width="10" fill="none" stroke-linecap="round"
+                stroke-dasharray="{circumference:.2f}"
+                stroke-dashoffset="{offset:.2f}"
+                transform="rotate(-90 60 60)"
+                style="transition: stroke-dashoffset 0.8s ease;"/>
+        <text x="60" y="58" text-anchor="middle" fill="#f0fdf4"
+              font-size="30" font-weight="700">{score}</text>
+        <text x="60" y="76" text-anchor="middle" fill="{color}"
+              font-size="11" font-weight="700" letter-spacing="1">
+            {label.upper()}
+        </text>
+      </svg>
+      <p style="color:#94a3b8;font-size:0.85rem;margin-top:0.5rem;">{desc}</p>
+    </div>
+    """
 
 # ============================================================================
 # Helper functions
@@ -763,77 +1093,96 @@ def confidence_gauge(prob: float, is_healthy: bool) -> str:
 
 
 # ============================================================================
+# Language selector (defined BEFORE header so it's available everywhere)
+# ============================================================================
+lang_choice = st.radio(
+    "🌐 Language / اللغة",
+    options=["en", "ar"],
+    format_func=lambda x: "English" if x == "en" else "العربية",
+    horizontal=True,
+    key="lang_choice",
+)
+lang = lang_choice
+
+
+# ============================================================================
 # Load model and metrics
 # ============================================================================
 model, idx_to_class, device, ckpt = load_model()
 metrics = load_metrics()
 
+
 # ============================================================================
 # Header — Hero section
 # ============================================================================
-st.markdown("""
+st.markdown(f"""
 <div class="pv-hero">
     <h1>🌿 PlantVision AI</h1>
-    <p>From Plant Images to Agricultural Intelligence.</p>
+    <p>{tr('hero_tagline', lang)}</p>
     <p style="font-size:0.95rem;opacity:0.8;margin-top:0.5rem;">
-        Upload a leaf photo — identify the plant and assess its health in seconds.
+        {tr('hero_subtitle', lang)}
     </p>
-    <span class="pv-badge">🌱 Classifier Preview · Phase 10</span>
+    <span class="pv-badge">{tr('hero_badge', lang)}</span>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ============================================================================
 # Sidebar — Model info
 # ============================================================================
 with st.sidebar:
-    st.markdown("### 🌿 PlantVision AI")
-    st.caption("Agricultural Intelligence Platform")
+    st.markdown(f"### 🌿 {tr('sidebar_title', lang)}")
+    st.caption(tr("sidebar_subtitle", lang))
     st.divider()
 
-    st.markdown("#### 🧠 Model Status")
+    st.markdown(f"#### 🧠 {tr('sidebar_model', lang)}")
     st.markdown(f"""
     <div class="pv-metric-card">
-        <div class="pv-metric-label">Architecture</div>
+        <div class="pv-metric-label">{tr('sidebar_arch', lang)}</div>
         <div class="pv-metric-value" style="font-size:1.1rem;">MobileNetV2</div>
     </div>
     <div class="pv-metric-card">
-        <div class="pv-metric-label">Device</div>
+        <div class="pv-metric-label">{tr('sidebar_device', lang)}</div>
         <div class="pv-metric-value" style="font-size:1.1rem;">{device}</div>
     </div>
     <div class="pv-metric-card">
-        <div class="pv-metric-label">Classes</div>
+        <div class="pv-metric-label">{tr('sidebar_classes', lang)}</div>
         <div class="pv-metric-value">{len(idx_to_class)}</div>
     </div>
     """, unsafe_allow_html=True)
 
     if metrics:
-        st.markdown("#### 📊 Test Performance")
+        st.markdown(f"#### 📊 {tr('sidebar_perf', lang)}")
         st.markdown(f"""
         <div class="pv-metric-card">
-            <div class="pv-metric-label">Accuracy</div>
+            <div class="pv-metric-label">{tr('sidebar_acc', lang)}</div>
             <div class="pv-metric-value">{metrics['accuracy']:.2%}</div>
         </div>
         <div class="pv-metric-card">
-            <div class="pv-metric-label">Top-5 Accuracy</div>
+            <div class="pv-metric-label">{tr('sidebar_top5', lang)}</div>
             <div class="pv-metric-value">{metrics['top5_accuracy']:.2%}</div>
         </div>
         <div class="pv-metric-card">
-            <div class="pv-metric-label">F1 (Macro)</div>
+            <div class="pv-metric-label">{tr('sidebar_f1', lang)}</div>
             <div class="pv-metric-value">{metrics['f1_macro']:.2%}</div>
         </div>
         """, unsafe_allow_html=True)
-        st.caption(f"Evaluated on {metrics['num_test_images']:,} held-out images")
+        st.caption(f"{tr('sidebar_evaluated', lang)} {metrics['num_test_images']:,} {tr('sidebar_evaluated_imgs', lang)}")
 
     st.divider()
-    st.caption(
-        "**Preview build.** Pest detection, severity estimation, health score, "
-        "and RAG recommendations are planned for later phases."
-    )
+    st.caption(tr("sidebar_preview_note", lang))
+
 
 # ============================================================================
 # Tabs
 # ============================================================================
-tab_predict, tab_info, tab_analytics = st.tabs(["🔍 Predict", "📊 Model Info", "📈 Analytics"])
+tab_predict, tab_info, tab_analytics = st.tabs([
+    tr("tab_predict", lang),
+    tr("tab_info", lang),
+    tr("tab_analytics", lang),
+])
+
+
 # ---------------------------------------------------------------------------
 # Predict tab
 # ---------------------------------------------------------------------------
@@ -843,21 +1192,21 @@ with tab_predict:
 
     with col_upload_left:
         uploaded = st.file_uploader(
-            "📸 Upload a plant leaf image (JPG / PNG)",
+            tr("upload_label", lang),
             type=["jpg", "jpeg", "png"],
-            help="One leaf, plain background, good lighting = best results.",
+            help=tr("upload_help", lang),
         )
 
     with col_upload_right:
         auto_crop = st.toggle(
-            "✂️ Auto-crop leaf",
+            tr("autocrop_label", lang),
             value=True,
-            help="Automatically isolate the main leaf before prediction.",
+            help=tr("autocrop_help", lang),
         )
-        st.caption("Recommended for real-world photos.")
+        st.caption(tr("autocrop_caption", lang))
 
     # --- Tips expander ---
-    with st.expander("📖 Tips for best accuracy", expanded=False):
+    with st.expander(tr("tips_title", lang), expanded=False):
         st.markdown("""
         The model was trained on **PlantVillage-style** images: a single leaf,
         plain background, even lighting.
@@ -877,12 +1226,12 @@ with tab_predict:
 
     # --- Result section ---
     if uploaded is None:
-        st.info("👆 Upload an image above to see a prediction.")
+        st.info(tr("no_image", lang))
     else:
         original = Image.open(uploaded).convert("RGB")
 
         if auto_crop:
-            with st.spinner("Detecting leaf..."):
+            with st.spinner(tr("detecting", lang)):
                 processed = auto_crop_leaf(original)
             crop_applied = processed.size != original.size
         else:
@@ -892,32 +1241,41 @@ with tab_predict:
         # Low-res warning
         w, h = processed.size
         if min(w, h) < 200:
-            st.warning(f"⚠️ Image is small ({w}×{h}). Predictions may be unreliable.")
+            st.warning(tr("low_res", lang).format(w=w, h=h))
 
         # --- Run prediction ---
-        with st.spinner("Analyzing leaf..."):
+        with st.spinner(tr("analyzing", lang)):
             results = predict(model, idx_to_class, device, processed)
 
         top_class, top_prob = results[0]
         plant, condition, is_healthy = parse_class(top_class)
+
+        # Arabic name override
+        if lang == "ar" and top_class in AR_CLASS_NAMES:
+            plant_ar, condition_ar = AR_CLASS_NAMES[top_class]
+            plant = plant_ar
+            condition = condition_ar
+
+        # --- Health score ---
+        health_score = calculate_health_score(top_class, top_prob)
 
         # --- Image column ---
         col_img, col_result = st.columns([1, 1.2])
 
         with col_img:
             if auto_crop:
-                st.image(original, caption="Original", use_container_width=True)
-                st.image(processed, caption="After auto-crop", use_container_width=True)
+                st.image(original, caption=tr("original", lang), use_container_width=True)
+                st.image(processed, caption=tr("after_crop", lang), use_container_width=True)
                 if not crop_applied:
-                    st.caption("_(No leaf detected — using original)_")
+                    st.caption(tr("no_leaf", lang))
             else:
-                st.image(processed, caption="Uploaded image", use_container_width=True)
+                st.image(processed, caption=tr("uploaded_image", lang), use_container_width=True)
 
         # --- Result column ---
         with col_result:
             result_class = "pv-result-healthy" if is_healthy else "pv-result-diseased"
             icon = "✅" if is_healthy else "⚠️"
-            condition_display = "Healthy" if is_healthy else condition
+            condition_display = tr("healthy", lang) if is_healthy else condition
 
             st.markdown(f"""
             <div class="pv-result {result_class}">
@@ -932,23 +1290,21 @@ with tab_predict:
             # Confidence gauge
             st.markdown(confidence_gauge(top_prob, is_healthy), unsafe_allow_html=True)
 
+            # Health Score gauge
+            st.markdown(f"#### 💚 {tr('health_score', lang)}")
+            st.markdown(health_score_gauge(health_score, lang), unsafe_allow_html=True)
+
             # Low confidence warning
             if top_prob < 0.80:
-                st.warning(
-                    f"⚠️ **Low confidence ({top_prob:.1%}).** The image may differ "
-                    f"from the training data. Try auto-crop or retake the photo."
-                )
+                st.warning(tr("low_conf", lang).format(pct=f"{top_prob:.1%}"))
             elif top_prob < 0.95:
-                st.info(
-                    f"ℹ️ Moderate confidence ({top_prob:.1%}). "
-                    f"Consider retaking for a more reliable result."
-                )
+                st.info(tr("mod_conf", lang).format(pct=f"{top_prob:.1%}"))
 
         # --- Disease info ---
         info = DISEASE_INFO.get(top_class)
         if info:
             st.markdown("---")
-            st.markdown("### 📋 About this result")
+            st.markdown(f"### {tr('about_result', lang)}")
             col_a, col_b = st.columns(2)
 
             with col_a:
@@ -959,8 +1315,8 @@ with tab_predict:
                 }.get(info["severity"], "#94a3b8")
                 st.markdown(f"""
                 <div class="pv-info-box">
-                    <h4>🩺 Condition</h4>
-                    <p><strong style="color:{sev_color};">Severity: {info['severity']}</strong></p>
+                    <h4>{tr('condition', lang)}</h4>
+                    <p><strong style="color:{sev_color};">{tr('severity', lang)}: {info['severity']}</strong></p>
                     <p style="margin-top:0.5rem;">{info['description']}</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -968,18 +1324,22 @@ with tab_predict:
             with col_b:
                 st.markdown(f"""
                 <div class="pv-info-box">
-                    <h4>💡 Care advice</h4>
+                    <h4>{tr('care_advice', lang)}</h4>
                     <p>{info['advice']}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
         # --- Top-5 candidates ---
         st.markdown("---")
-        st.markdown("### 🎯 Top 5 candidates")
+        st.markdown(f"### {tr('top5_title', lang)}")
 
         for i, (raw_class, prob) in enumerate(results):
             p, c, healthy = parse_class(raw_class)
-            label = f"🌱 {p} — Healthy" if healthy else f"🦠 {p} — {c}"
+            if lang == "ar" and raw_class in AR_CLASS_NAMES:
+                p_ar, c_ar = AR_CLASS_NAMES[raw_class]
+                p = p_ar
+                c = c_ar
+            label = f"🌱 {p} — {tr('healthy', lang)}" if healthy else f"🦠 {p} — {c}"
             rank_class = "pv-rank-item first" if i == 0 else "pv-rank-item"
             st.markdown(f"""
             <div class="{rank_class}">
@@ -990,30 +1350,25 @@ with tab_predict:
 
         # --- Grad-CAM attention map ---
         st.markdown("---")
-        st.markdown("### 🔍 Model Attention (Grad-CAM)")
-        st.caption(
-            "Where the model looked when making its top prediction. "
-            "Red = high attention, blue = low attention."
-        )
+        st.markdown(f"### {tr('gradcam_title', lang)}")
+        st.caption(tr("gradcam_caption", lang))
 
-        with st.spinner("Generating attention map..."):
+        with st.spinner(tr("gradcam_spinner", lang)):
             try:
                 top_idx = [k for k, v in idx_to_class.items() if v == top_class][0]
                 heatmap = generate_gradcam(model, device, processed, target_class=top_idx)
                 st.image(
                     heatmap,
-                    caption=f"Attention for: {plant} — {condition}",
+                    caption=f"{tr('gradcam_attn', lang)}: {plant} — {condition}",
                     use_container_width=True,
                 )
             except Exception as e:
-                st.warning(f"Could not generate Grad-CAM: {e}")
+                st.warning(f"{tr('gradcam_fail', lang)}: {e}")
 
         # --- Disclaimer ---
         st.markdown("---")
-        st.caption(
-            "⚠️ This is a raw classifier output for a single image — not a full "
-            "plant health report. Confirm with a professional before any treatment."
-        )
+        st.caption(tr("disclaimer", lang))
+
 
 # ---------------------------------------------------------------------------
 # Model Info tab
