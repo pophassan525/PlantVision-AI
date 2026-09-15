@@ -1,0 +1,47 @@
+# PlantVision AI — Health Score configuration
+#
+# Status: PLACEHOLDER structure. These weights are illustrative defaults only —
+# they have NOT been scientifically validated and must not be presented to users
+# as calibrated agricultural thresholds until reviewed against real evaluation data.
+#
+# Health Score = 100 - sum(active penalty components), clamped to [0, 100].
+# The UI must always display which components fired and by how much (see Rule/Module 6).
+
+base_score: 100
+
+components:
+  disease:
+    description: "Penalty applied when a disease is detected, scaled by model confidence."
+    max_penalty: 30
+    enabled: true
+
+  visible_damage:
+    description: "Penalty for estimated visibly affected/lesioned area."
+    max_penalty: 25
+    enabled: true
+    severity_bands:
+      mild:     { max_area_pct: 10, penalty: 5 }
+      moderate: { max_area_pct: 30, penalty: 15 }
+      severe:   { max_area_pct: 100, penalty: 25 }
+
+  pest:
+    description: "Penalty applied when a supported pest is detected."
+    max_penalty: 20
+    enabled: false   # disabled until pest_detector model status is IMPLEMENTED
+
+  symptoms:
+    description: "Penalty for rule/knowledge-based symptom flags (yellowing, wilting, necrosis, etc.)."
+    max_penalty: 15
+    enabled: true
+
+severity_thresholds:
+  # Affected-area percentage bands used to label severity category.
+  # Configurable and NOT claimed to be scientifically validated thresholds.
+  mild_max_pct: 10
+  moderate_max_pct: 30
+  # anything above moderate_max_pct is "severe"
+
+notes: >
+  All weights above are TODO/PLACEHOLDER defaults for early development and demo purposes.
+  Before any public-facing claim about the health score's meaning, these weights must be
+  reviewed, documented with justification, and referenced in docs/LIMITATIONS.md.

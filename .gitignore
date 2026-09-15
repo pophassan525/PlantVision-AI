@@ -1,0 +1,38 @@
+# Environments
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Data (never commit raw datasets or large processed data)
+data/raw/*
+data/processed/*
+data/train/*
+data/validation/*
+data/test/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/train/.gitkeep
+!data/validation/.gitkeep
+!data/test/.gitkeep
+
+# Trained model weights (large binary files — track via metadata/config, not git)
+models/**/*.pt
+models/**/*.pth
+models/**/*.h5
+models/**/*.onnx
+models/**/*.keras
+
+# Reports / generated artifacts
+reports/*.png
+reports/*.json
+
+# Database
+*.db
+*.sqlite3
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

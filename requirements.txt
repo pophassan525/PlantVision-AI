@@ -1,0 +1,24 @@
+# PlantVision AI — dependencies
+# Phase 0/1 baseline. Deep-learning and RAG-specific packages will be added
+# incrementally as those phases begin, to avoid installing unused heavy deps early.
+
+# Core
+numpy
+pandas
+pyyaml
+python-dotenv
+
+# Image handling
+Pillow
+opencv-python-headless
+
+# App (Phase 10)
+streamlit
+
+# Will be added in later phases:
+# torch / torchvision           (Phase 2 — classification)
+# ultralytics                   (Phase 4 — YOLO pest detection)
+# scikit-learn                  (Phase 2 — evaluation metrics)
+# grad-cam                      (Phase 11 — explainability)
+# chromadb / faiss-cpu          (Phase 9 — RAG vector store)
+# anthropic                     (Phase 9 — RAG LLM calls)

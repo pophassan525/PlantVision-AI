@@ -1,0 +1,45 @@
+# PlantVision AI — main configuration
+# Status: PLACEHOLDER — values below are structural defaults, not tuned/validated results.
+# Do not treat any number here as a scientific claim until it is produced by an actual
+# training/evaluation run and recorded in reports/.
+
+app:
+  name: "PlantVision AI"
+  version: "0.1.0-dev"
+  environment: "development"
+
+hardware:
+  device: "auto"   # auto | cpu | cuda
+  # This environment currently has no GPU detected — CPU fallback is the default path.
+
+image:
+  input_size: [224, 224]   # standard for MobileNetV2 / EfficientNet-B0 transfer learning
+  allowed_formats: ["jpg", "jpeg", "png"]
+  max_file_size_mb: 10
+
+models:
+  plant_classifier:
+    status: "NOT AVAILABLE YET"
+    architecture: "TODO"       # e.g. MobileNetV2 — to be decided in Phase 2 after dataset inspection
+    weights_path: "models/plant_classifier/model.pt"
+  disease_classifier:
+    status: "NOT AVAILABLE YET"
+    architecture: "TODO"
+    weights_path: "models/disease_classifier/model.pt"
+  pest_detector:
+    status: "NOT AVAILABLE YET"
+    architecture: "TODO"       # YOLO variant, pending a bounding-box-labeled dataset
+    weights_path: "models/pest_detector/model.pt"
+  severity_model:
+    status: "NOT AVAILABLE YET"
+    approach: "TODO"           # heuristic lesion-area estimate vs. trained segmentation model
+
+database:
+  path: "data/plantvision.db"
+
+rag:
+  enabled: false   # Phase 9 — not yet implemented
+  knowledge_base_path: "data/knowledge/"
+
+logging:
+  level: "INFO"
