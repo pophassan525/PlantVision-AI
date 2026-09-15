@@ -1,44 +1,58 @@
 # PlantVision AI — main configuration
-# Status: PLACEHOLDER — values below are structural defaults, not tuned/validated results.
-# Do not treat any number here as a scientific claim until it is produced by an actual
-# training/evaluation run and recorded in reports/.
+# Values marked IMPLEMENTED are backed by real, run-produced results in reports/.
+# Values marked PLACEHOLDER are structural defaults and must not be read as
+# scientific claims until a real run produces them.
 
 app:
   name: "PlantVision AI"
-  version: "0.1.0-dev"
+  version: "0.2.0-dev"
   environment: "development"
 
 hardware:
-  device: "auto"   # auto | cpu | cuda
-  # This environment currently has no GPU detected — CPU fallback is the default path.
+  device: "auto"
 
 image:
-  input_size: [224, 224]   # standard for MobileNetV2 / EfficientNet-B0 transfer learning
+  input_size: [224, 224]
   allowed_formats: ["jpg", "jpeg", "png"]
   max_file_size_mb: 10
 
 models:
   plant_classifier:
-    status: "NOT AVAILABLE YET"
-    architecture: "TODO"       # e.g. MobileNetV2 — to be decided in Phase 2 after dataset inspection
-    weights_path: "models/plant_classifier/model.pt"
+    status: "IMPLEMENTED"
+    architecture: "MobileNetV2"
+    weights_path: "models/plant_classifier/best_model.pt"
+    class_map_path: "models/plant_classifier/class_to_idx.json"
+    num_classes: 38
+    test_accuracy: 0.9410
+    test_top5_accuracy: 0.9974
+    test_f1_macro: 0.9270
+    trained_epochs: 14
+    dataset: "PlantVillage (color)"
   disease_classifier:
     status: "NOT AVAILABLE YET"
     architecture: "TODO"
     weights_path: "models/disease_classifier/model.pt"
+    note: "Plant disease is currently inferred from the combined plant+disease labels of the plant classifier."
   pest_detector:
     status: "NOT AVAILABLE YET"
-    architecture: "TODO"       # YOLO variant, pending a bounding-box-labeled dataset
+    architecture: "TODO"
     weights_path: "models/pest_detector/model.pt"
   severity_model:
     status: "NOT AVAILABLE YET"
-    approach: "TODO"           # heuristic lesion-area estimate vs. trained segmentation model
+    approach: "TODO"
+
+preprocessing:
+  auto_crop:
+    enabled: true
+    method: "HSV color mask + GrabCut"
+    margin_px: 15
 
 database:
   path: "data/plantvision.db"
+  status: "NOT AVAILABLE YET"
 
 rag:
-  enabled: false   # Phase 9 — not yet implemented
+  enabled: false
   knowledge_base_path: "data/knowledge/"
 
 logging:
