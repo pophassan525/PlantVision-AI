@@ -304,7 +304,7 @@ MIT License — see `LICENSE` file for details.
 ## 📧 Contact & Support
 
 - **GitHub Issues:** https://github.com/pophassan525/PlantVision-AI/issues
-- **Email:** [your email]
+- **Email:** [pophassan525@gmail.com]
 
 ---
 
