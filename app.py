@@ -38,6 +38,7 @@ import plotly.graph_objects as go
 
 sys.path.append(str(Path(__file__).resolve().parent))
 from src.classification.plant_classifier import build_model  # noqa: E402
+from src.recognition.unknown_plant_detector import UnknownPlantDetector  # noqa: E402
 
 # ============================================================================
 # Paths & constants
@@ -514,6 +515,15 @@ def load_model():
     model.load_state_dict(ckpt["model_state_dict"])
     model.to(device).eval()
     return model, idx_to_class, device, ckpt
+
+
+@st.cache_resource
+def load_unknown_detector():
+    """Load the CLIP-based known/unknown plant detector (separate from the main classifier)."""
+    return UnknownPlantDetector(
+        embeddings_dir=str(ROOT / "data" / "embeddings"),
+        similarity_threshold=0.75,
+    )
 
 
 @st.cache_data
@@ -2283,9 +2293,10 @@ with st.sidebar:
 # ============================================================================
 # Tabs
 # ============================================================================
-(tab_predict, tab_batch, tab_history,
+(tab_predict, tab_unknown, tab_batch, tab_history,
  tab_kb, tab_info, tab_analytics) = st.tabs([
     tr("tab_predict", lang),
+    "🔍 كاشف الغرابة" if lang == "ar" else "🔍 Unknown Detector",
     tr("tab_batch", lang),
     tr("tab_history", lang),
     tr("tab_kb", lang),
@@ -2395,6 +2406,28 @@ with tab_predict:
         w, h = processed.size
         if min(w, h) < 200:
             st.warning(tr("low_res", lang).format(w=w, h=h))
+
+        # --- OOD / Unknown pre-check (CLIP-based, separate model) ---
+        _ood_tmp_path = ROOT / "data" / "_tmp_predict_ood_check.jpg"
+        _ood_tmp_path.parent.mkdir(parents=True, exist_ok=True)
+        processed.convert("RGB").save(_ood_tmp_path)
+        _ood_detector = load_unknown_detector()
+        _ood_result = _ood_detector.detect(str(_ood_tmp_path))
+
+        if _ood_result.get("status") == "unknown":
+            _ood_conf = _ood_result.get("confidence", 0.0)
+            if lang == "ar":
+                st.warning(
+                    f"⚠️ الصورة دي مش قريبة بوضوح من أي نوع من الـ 38 نوع اللي "
+                    f"الموديل اتدرب عليهم (أعلى تشابه: {_ood_conf:.1%}). "
+                    f"النتيجة اللي جاية ممكن تكون غير دقيقة."
+                )
+            else:
+                st.warning(
+                    f"⚠️ This image doesn't closely resemble any of the 38 known "
+                    f"classes (best match: {_ood_conf:.1%}). The prediction below "
+                    f"may be unreliable."
+                )
 
         # --- Run inference with guards ---
         use_consensus = st.toggle(
@@ -2922,6 +2955,103 @@ with tab_analytics:
 
     st.markdown("---")
     st.caption("📌 All statistics are computed live from real artifacts in `reports/`.")
+
+
+# ---------------------------------------------------------------------------
+# Unknown Detector tab — CLIP-based known/unknown check (separate model)
+# ---------------------------------------------------------------------------
+with tab_unknown:
+    is_ar = lang == "ar"
+    st.markdown(
+        "## 🔍 كاشف النبات المجهول" if is_ar else "## 🔍 Unknown Plant Detector"
+    )
+    st.caption(
+        "بيستخدم موديل CLIP منفصل عشان يحدد هل الصورة قريبة من الـ 38 نوع "
+        "اللي عندنا ولا حاجة تانية خالص (غير معروفة)."
+        if is_ar else
+        "Uses a separate CLIP embedding model to check whether the image "
+        "resembles one of our 38 known classes or something else entirely."
+    )
+
+    detector = load_unknown_detector()
+
+    unk_threshold = st.slider(
+        "حد التشابه (threshold)" if is_ar else "Similarity threshold",
+        min_value=0.50, max_value=0.99, value=0.75, step=0.01,
+        help=(
+            "لو أعلى نسبة تشابه أقل من الرقم ده، الصورة هتتحسب unknown."
+            if is_ar else
+            "If the best match score is below this, the image is flagged as unknown."
+        ),
+    )
+    detector.similarity_threshold = unk_threshold
+
+    unk_file = st.file_uploader(
+        "ارفع أي صورة (نبات أو مش نبات) للاختبار" if is_ar
+        else "Upload any image (plant or not) to test",
+        type=["jpg", "jpeg", "png"],
+        key="unknown_detector_uploader",
+    )
+
+    if unk_file is not None:
+        col_img, col_res = st.columns([1, 1.4])
+
+        with col_img:
+            st.image(unk_file, use_container_width=True)
+
+        # UnknownPlantDetector expects a file path, so save the upload temporarily
+        tmp_path = ROOT / "data" / "_tmp_unknown_upload.jpg"
+        tmp_path.parent.mkdir(parents=True, exist_ok=True)
+        Image.open(unk_file).convert("RGB").save(tmp_path)
+
+        with st.spinner("بيحسب..." if is_ar else "Analyzing..."):
+            result = detector.detect(str(tmp_path))
+
+        with col_res:
+            if result.get("status") == "error":
+                st.error(result.get("message", "Error"))
+            else:
+                status = result["status"]
+                confidence = result["confidence"]
+                predicted_class = result["class"]
+
+                if status == "known":
+                    st.success(
+                        f"✅ معروف — {predicted_class} (ثقة {confidence:.1%})"
+                        if is_ar else
+                        f"✅ Known — {predicted_class} (confidence {confidence:.1%})"
+                    )
+                else:
+                    st.warning(
+                        f"❓ مش معروف (أعلى تشابه {confidence:.1%}, أقل من الحد {unk_threshold:.0%})"
+                        if is_ar else
+                        f"❓ Unknown (best match {confidence:.1%}, below the {unk_threshold:.0%} threshold)"
+                    )
+
+                st.markdown("##### " + ("أعلى 5 تطابقات" if is_ar else "Top 5 matches"))
+                all_scores = result.get("all_scores", {})
+                top5 = sorted(all_scores.items(), key=lambda kv: kv[1], reverse=True)[:5]
+                if top5:
+                    fig_unk = go.Figure(go.Bar(
+                        x=[s for _, s in top5][::-1],
+                        y=[c for c, _ in top5][::-1],
+                        orientation="h",
+                        marker=dict(color="#4ade80"),
+                    ))
+                    fig_unk.update_layout(
+                        height=280, xaxis_range=[0, 1],
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        **PLOTLY_DARK,
+                    )
+                    st.plotly_chart(fig_unk, use_container_width=True)
+    else:
+        st.info(
+            "ارفع صورة فوق — جرّب صورة نبات حقيقي وكمان صورة حاجة تانية خالص "
+            "(عربية، شخص، حيوان) عشان تشوف الفرق."
+            if is_ar else
+            "Upload an image above — try a real plant photo and also something "
+            "completely unrelated (a car, a person, an animal) to see the difference."
+        )
 
 
 # ---------------------------------------------------------------------------
