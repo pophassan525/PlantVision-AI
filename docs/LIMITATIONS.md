@@ -37,5 +37,18 @@ README), but no current-version output should be read as satisfying that need.
 
 When explainability visualizations are shown, they indicate which image
 regions influenced the model's prediction — not biological causation. A
-highlighted region is not proof that region *is* the diseased tissue; it is
+highlighted region is not proof that region _is_ the diseased tissue; it is
 evidence about what the model attended to.
+
+## Dataset Update — Egyptian Field Data (2026-09-18)
+
+- Added 8 new classes from real field photos (own collection, Egyptian crops):
+  Egypt_Apple, Egypt_Berry, Egypt_Fig, Egypt_Guava, Egypt_Orange, Egypt_Palm,
+  Egypt_Persimmon, Egypt_Tomato (3,588 images, species-level only — no disease
+  label yet)
+- Total classes: 38 -> 46
+- Total images: 54,284 -> 57,872
+- Split (70/15/15): train=40,489, validation=8,662, test=8,721
+- Known limitation logged separately: Egyptian classes have natural field
+  backgrounds vs. PlantVillage's plain studio backgrounds — see
+  docs/LIMITATIONS.md "Background Confound" entry

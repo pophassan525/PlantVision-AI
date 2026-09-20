@@ -73,6 +73,54 @@
       "validation": 147,
       "test": 149
     },
+    "Egypt_Apple": {
+      "total": 519,
+      "train": 363,
+      "validation": 77,
+      "test": 79
+    },
+    "Egypt_Berry": {
+      "total": 340,
+      "train": 237,
+      "validation": 51,
+      "test": 52
+    },
+    "Egypt_Fig": {
+      "total": 508,
+      "train": 355,
+      "validation": 76,
+      "test": 77
+    },
+    "Egypt_Guava": {
+      "total": 520,
+      "train": 364,
+      "validation": 78,
+      "test": 78
+    },
+    "Egypt_Orange": {
+      "total": 547,
+      "train": 382,
+      "validation": 82,
+      "test": 83
+    },
+    "Egypt_Palm": {
+      "total": 468,
+      "train": 327,
+      "validation": 70,
+      "test": 71
+    },
+    "Egypt_Persimmon": {
+      "total": 527,
+      "train": 368,
+      "validation": 79,
+      "test": 80
+    },
+    "Egypt_Tomato": {
+      "total": 159,
+      "train": 111,
+      "validation": 23,
+      "test": 25
+    },
     "Grape___Black_rot": {
       "total": 1180,
       "train": 826,
@@ -237,8 +285,8 @@
     }
   },
   "totals": {
-    "train": 37982,
-    "validation": 8126,
-    "test": 8176
+    "train": 40489,
+    "validation": 8662,
+    "test": 8721
   }
 }

@@ -1,9 +1,9 @@
 # Dataset Inspection Summary
 
 - Data directory: `data\raw`
-- Number of classes: 38
-- Total valid images: 54284
-- Mean images per class: 1428.5
+- Number of classes: 46
+- Total valid images: 57872
+- Mean images per class: 1258.1
 - Corrupted files found: 0
 - Exact-duplicate groups found: 0
 
@@ -11,10 +11,12 @@
 
 | Class | Images |
 |---|---|
+| Apple | 519 |
 | Apple___Apple_scab | 630 |
 | Apple___Black_rot | 621 |
 | Apple___Cedar_apple_rust | 275 |
 | Apple___healthy | 1638 |
+| Berry | 340 |
 | Blueberry___healthy | 1502 |
 | Cherry_(including_sour)___Powdery_mildew | 1052 |
 | Cherry_(including_sour)___healthy | 854 |
@@ -22,15 +24,20 @@
 | Corn_(maize)___Common_rust_ | 1192 |
 | Corn_(maize)___Northern_Leaf_Blight | 985 |
 | Corn_(maize)___healthy | 1162 |
+| Fig | 508 |
 | Grape___Black_rot | 1180 |
 | Grape___Esca_(Black_Measles) | 1383 |
 | Grape___Leaf_blight_(Isariopsis_Leaf_Spot) | 1076 |
 | Grape___healthy | 423 |
+| Guava | 520 |
+| Orange | 547 |
 | Orange___Haunglongbing_(Citrus_greening) | 5507 |
+| Palm | 468 |
 | Peach___Bacterial_spot | 2297 |
 | Peach___healthy | 360 |
 | Pepper,_bell___Bacterial_spot | 997 |
 | Pepper,_bell___healthy | 1478 |
+| Persimmon | 527 |
 | Potato___Early_blight | 1000 |
 | Potato___Late_blight | 1000 |
 | Potato___healthy | 152 |
@@ -39,6 +46,7 @@
 | Squash___Powdery_mildew | 1835 |
 | Strawberry___Leaf_scorch | 1109 |
 | Strawberry___healthy | 456 |
+| Tomato | 159 |
 | Tomato___Bacterial_spot | 2127 |
 | Tomato___Early_blight | 1000 |
 | Tomato___Late_blight | 1901 |
@@ -52,16 +60,23 @@
 
 ## Classes flagged for imbalance (< 0.5x or > 2x the mean)
 
-- Apple___Apple_scab: 630 images
+- Apple: 519 images
 - Apple___Black_rot: 621 images
 - Apple___Cedar_apple_rust: 275 images
+- Berry: 340 images
 - Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot: 513 images
+- Fig: 508 images
 - Grape___healthy: 423 images
+- Guava: 520 images
+- Orange: 547 images
 - Orange___Haunglongbing_(Citrus_greening): 5507 images
+- Palm: 468 images
 - Peach___healthy: 360 images
+- Persimmon: 527 images
 - Potato___healthy: 152 images
 - Raspberry___healthy: 371 images
 - Soybean___healthy: 5090 images
 - Strawberry___healthy: 456 images
+- Tomato: 159 images
 - Tomato___Tomato_mosaic_virus: 373 images
 - Tomato___Tomato_Yellow_Leaf_Curl_Virus: 5357 images

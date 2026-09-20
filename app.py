@@ -788,6 +788,47 @@ DISEASE_INFO: dict[str, dict[str, str]] = {
         "description": "The leaf appears healthy with no visible signs of disease.",
         "advice": "Keep monitoring; water consistently and stake plants for airflow.",
     },
+    # ---- Egyptian field-data classes (species ID only, no disease sub-label) ----
+    "Egypt_Apple": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Berry": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Fig": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Guava": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Orange": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Palm": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Persimmon": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
+    "Egypt_Tomato": {
+        "severity": "None",
+        "description": "Species identified from a real-world Egyptian field photo. This class has no disease sub-labels yet -- it only confirms the crop type.",
+        "advice": "No disease assessment is available for this class yet; treat this as identification only.",
+    },
 }
 
 # ============================================================================
@@ -1039,6 +1080,15 @@ AR_CLASS_NAMES = {
     "Tomato___Tomato_Yellow_Leaf_Curl_Virus": ("طماطم", "فيروس تجعد الأوراق الأصفر"),
     "Tomato___Tomato_mosaic_virus": ("طماطم", "فيروس الموزاييك"),
     "Tomato___healthy": ("طماطم", "سليمة"),
+    # ---- Egyptian field-data classes (species ID only) ----
+    "Egypt_Apple": ("تفاح مصري", "تعريف نوع فقط"),
+    "Egypt_Berry": ("توت مصري", "تعريف نوع فقط"),
+    "Egypt_Fig": ("تين مصري", "تعريف نوع فقط"),
+    "Egypt_Guava": ("جوافة مصرية", "تعريف نوع فقط"),
+    "Egypt_Orange": ("برتقال مصري", "تعريف نوع فقط"),
+    "Egypt_Palm": ("نخيل مصري", "تعريف نوع فقط"),
+    "Egypt_Persimmon": ("كاكي مصري", "تعريف نوع فقط"),
+    "Egypt_Tomato": ("طماطم مصرية", "تعريف نوع فقط"),
 }
 
 
@@ -1147,6 +1197,13 @@ EXTRA_TRANSLATIONS = {
         "top5_chart": "Probability distribution",
         "confidence_title": "Confidence",
         "reset_btn": "🔄 New scan",
+
+        # TTA (field-photo accuracy mode)
+        "tta_label": "🔬 Enhanced accuracy mode (field photos)",
+        "tta_help": "Runs the model on 6 lighting/angle variations of your photo and averages "
+                    "the result. Slower, but steadier on photos taken outdoors.",
+        "tta_agree_high": "views agreed on this plant",
+        "tta_agree_low": "The augmented views disagreed with each other — treat this result with extra caution.",
     },
     "ar": {
         "tab_batch": "📦 فحص جماعي",
@@ -1239,6 +1296,12 @@ EXTRA_TRANSLATIONS = {
         "top5_chart": "توزيع الاحتمالات",
         "confidence_title": "نسبة الثقة",
         "reset_btn": "🔄 فحص جديد",
+
+        "tta_label": "🔬 وضع الدقة المحسّنة (صور من الطبيعة)",
+        "tta_help": "بيشغّل الموديل على 6 نسخ مختلفة الإضاءة والزاوية من نفس الصورة ويحسب المتوسط. "
+                    "أبطأ شوية، لكن أثبت على الصور الملتقطة بره.",
+        "tta_agree_high": "نسخة متفقة على النبات ده",
+        "tta_agree_low": "النسخ المعدّلة اختلفت مع بعضها — تعامل مع النتيجة دي بحذر زيادة.",
     },
 }
 
@@ -1469,6 +1532,88 @@ def predict_detailed(model, idx_to_class, device, image: Image.Image, k: int = 5
     return top, probs.numpy()
 
 
+
+
+# ============================================================================
+# NEW · Test-Time Augmentation (TTA) — for field / real-world photos
+# ============================================================================
+def _tta_variants(pil_image: Image.Image) -> list:
+    """
+    Build a small set of plausible alternate views of the SAME leaf:
+    brighter, darker, higher contrast, mildly rotated, and mirrored.
+
+    The training data (PlantVillage) is shot under one consistent studio
+    lighting setup. A field photo rarely matches that exactly — the sun
+    might be harsher, the angle off by a few degrees, one side in shadow.
+    None of these variants change what plant or disease is in the photo,
+    only how the light happens to be falling on it, so averaging the
+    model's opinion across them gives a steadier answer than trusting the
+    single frame the camera happened to capture.
+    """
+    from PIL import ImageEnhance
+
+    base = pil_image.convert("RGB")
+    variants = [base]
+
+    variants.append(ImageEnhance.Brightness(base).enhance(1.25))
+    variants.append(ImageEnhance.Brightness(base).enhance(0.78))
+    variants.append(ImageEnhance.Contrast(base).enhance(1.25))
+
+    for angle in (-12, 12):
+        variants.append(base.rotate(angle, resample=Image.BICUBIC, expand=False))
+
+    variants.append(base.transpose(Image.FLIP_LEFT_RIGHT))
+
+    return variants
+
+
+def predict_tta(model, idx_to_class, device, image: Image.Image, k: int = 5):
+    """
+    Run the classifier on several augmented views of the same leaf and
+    average the softmax probabilities (test-time augmentation).
+
+    Returns:
+      top            [(raw_class, prob), ...] — ranked by the averaged score
+      mean_probs     the averaged probability vector (for the reliability gate)
+      per_view_top1  [(raw_class, prob), ...] — the top-1 call for EACH view,
+                     so the UI can show whether the views agreed with each
+                     other (a stronger signal than a single confidence score)
+    """
+    variants = _tta_variants(image)
+    tf = build_transform()
+
+    probs_list, per_view_top1 = [], []
+    with torch.no_grad():
+        for variant in variants:
+            normalized = normalize_to_plantvillage(variant)
+            x = tf(normalized).unsqueeze(0).to(device)
+            probs = F.softmax(model(x), dim=1)[0].cpu()
+            probs_list.append(probs)
+            v_prob, v_idx = torch.max(probs, dim=0)
+            per_view_top1.append((idx_to_class[v_idx.item()], float(v_prob.item())))
+
+    mean_probs = torch.stack(probs_list).mean(dim=0)
+    top_probs, top_idx = torch.topk(mean_probs, k=min(k, len(idx_to_class)))
+    top = [(idx_to_class[i.item()], p.item()) for p, i in zip(top_probs, top_idx)]
+    return top, mean_probs.numpy(), per_view_top1
+
+
+def tta_agreement(per_view_top1: list) -> dict:
+    """How many of the TTA views ended up agreeing on the same plant/class?"""
+    if not per_view_top1:
+        return {"n": 0, "plant_agreement": 0.0, "class_agreement": 0.0, "top_plant": ""}
+
+    classes = [c for c, _ in per_view_top1]
+    plants = [parse_class(c)[0] for c in classes]
+    n = len(per_view_top1)
+    top_plant = max(set(plants), key=plants.count)
+    top_class = max(set(classes), key=classes.count)
+    return {
+        "n": n,
+        "plant_agreement": plants.count(top_plant) / n,
+        "class_agreement": classes.count(top_class) / n,
+        "top_plant": top_plant,
+    }
 
 
 def enhanced_reliability(
@@ -1802,15 +1947,24 @@ def list_sample_images(limit_per_class: int = 2):
 # Helper functions
 # ============================================================================
 def parse_class(raw: str) -> tuple[str, str, bool]:
-    """Split 'Tomato___Early_blight' into (plant, condition, is_healthy)."""
+    """Split 'Tomato___Early_blight' into (plant, condition, is_healthy).
+
+    The 8 Egyptian field-data classes (Egypt_Apple, Egypt_Berry, ...) carry no
+    '___' separator at all -- they are species identification only, with no
+    disease sub-label. These are treated as is_healthy=True (not "diseased"),
+    since no disease was actually assessed for them; calling them anything
+    else would silently fabricate a "Moderate disease" reading that was never
+    produced by the model. See docs/DATASET_PLAN.md's 2026-09-18 entry.
+    """
     if "___" in raw:
         plant, condition = raw.split("___", 1)
-    else:
-        plant, condition = raw, "unknown"
-    plant = plant.replace("_", " ").strip().rstrip(",")
-    condition_clean = condition.replace("_", " ").strip()
-    is_healthy = condition.lower() == "healthy"
-    return plant, condition_clean, is_healthy
+        plant = plant.replace("_", " ").strip().rstrip(",")
+        condition_clean = condition.replace("_", " ").strip()
+        is_healthy = condition.lower() == "healthy"
+        return plant, condition_clean, is_healthy
+
+    plant = raw.replace("Egypt_", "").replace("_", " ").strip()
+    return plant, "species identified (no disease label)", True
 
 
 def predict(model, idx_to_class, device, image: Image.Image, k: int = 5):
@@ -2368,6 +2522,12 @@ with tab_predict:
         st.caption(tr("autocrop_caption", lang))
         show_lesions = st.toggle(tr("lesion_title", lang), value=True)
         show_gradcam = st.toggle(tr("gradcam_title", lang), value=True)
+        use_tta = st.toggle(
+            tr("tta_label", lang),
+            value=False,
+            help=tr("tta_help", lang),
+            key="use_tta",
+        )
 
     # --- Tips expander ---
     with st.expander(tr("tips_title", lang), expanded=False):
@@ -2438,7 +2598,15 @@ with tab_predict:
         )
 
         with st.spinner(tr("analyzing", lang)):
-            results, prob_vector = predict_detailed(model, idx_to_class, device, processed)
+            tta_stats = None
+            if use_tta:
+                results, prob_vector, _tta_views = predict_tta(
+                    model, idx_to_class, device, processed
+                )
+                tta_stats = tta_agreement(_tta_views)
+            else:
+                results, prob_vector = predict_detailed(model, idx_to_class, device, processed)
+
             consensus_votes = consensus_total = None
             if use_consensus:
                 consensus = consensus_prediction(
@@ -2471,6 +2639,14 @@ with tab_predict:
             is_healthy=is_healthy,
             class_threshold=class_threshold,
         )
+
+        # If enhanced-accuracy mode ran, low agreement between the augmented
+        # views is itself a reason not to trust the result — fold it in.
+        if tta_stats and tta_stats["plant_agreement"] < 0.5:
+            should_show = False
+            tta_warning = tr("tta_agree_low", lang)
+            guard_reason = f"{guard_reason} {tta_warning}".strip() if guard_reason else tta_warning
+
         # Arabic name override
         if lang == "ar" and top_class in AR_CLASS_NAMES:
             plant, condition = AR_CLASS_NAMES[top_class]
@@ -2485,6 +2661,11 @@ with tab_predict:
             if consensus_votes:
                 st.caption(
                     f"🗳️ Consensus: {consensus_votes}/{consensus_total} crops agree on this plant"
+                )
+            if tta_stats:
+                st.caption(
+                    f"🔬 {int(round(tta_stats['plant_agreement'] * tta_stats['n']))}/"
+                    f"{tta_stats['n']} {tr('tta_agree_high', lang)}"
                 )
             result_area = st.container()
         else:
